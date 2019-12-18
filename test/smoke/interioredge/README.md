@@ -1,6 +1,6 @@
 # Interior and Edge meshes
 
-Deploys two interior router meshes (running in distinct namespaces, within the same
+Deploys two interior router meshes (running in same namespace, within the same
 context). Two edge routers will connect to each interior mesh.
 
 The network topology would be like:

@@ -1,4 +1,4 @@
-package testing
+package testcommon
 
 const (
 	TimeoutSetupTeardown = 20

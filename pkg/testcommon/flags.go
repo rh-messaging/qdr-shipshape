@@ -1,4 +1,4 @@
-package testing
+package testcommon
 
 func RegisterFlags() {
 	//TODO Define custom flags
