@@ -33,4 +33,4 @@ A total of 72 clients (senders + receivers) will connect with the mesh above
 ## Tests
 
 * Anycast and Multicast tests
-* Small (1kb), medium (100kb) and large messages (1mb) to be exchanged
+* Small (1kb), medium (100kb) and large messages (500kb) to be exchanged
