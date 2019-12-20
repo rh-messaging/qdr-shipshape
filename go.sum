@@ -65,6 +65,12 @@ github.com/rh-messaging/shipshape v0.0.0-20191218161807-6422248b2711 h1:e8Wplz70
 github.com/rh-messaging/shipshape v0.0.0-20191218161807-6422248b2711/go.mod h1:1Nq7TQeRwM/tmFlRWczyR8E8ikZ3Pam8MJKQuYx9Fk4=
 github.com/rh-messaging/shipshape v0.0.0-20191218200000-e2e2ad945348 h1:tT1E7fjnCyjLZxcLifeX/4Tk4/+NASdxlpv/vbnYlPg=
 github.com/rh-messaging/shipshape v0.0.0-20191218200000-e2e2ad945348/go.mod h1:1Nq7TQeRwM/tmFlRWczyR8E8ikZ3Pam8MJKQuYx9Fk4=
+github.com/rh-messaging/shipshape v0.0.0-20191219211915-2759260e0c68 h1:aUhNx8uS1IH7O7MlDechcRlDrCj2IbacR0d02GQOnKI=
+github.com/rh-messaging/shipshape v0.0.0-20191219211915-2759260e0c68/go.mod h1:1Nq7TQeRwM/tmFlRWczyR8E8ikZ3Pam8MJKQuYx9Fk4=
+github.com/rh-messaging/shipshape v0.0.0-20191219215621-9d67a9dd34d4 h1:y3kdq55R6UsY/gu6Px0Vqw4z/adDEMVs43s0q7a8+IU=
+github.com/rh-messaging/shipshape v0.0.0-20191219215621-9d67a9dd34d4/go.mod h1:1Nq7TQeRwM/tmFlRWczyR8E8ikZ3Pam8MJKQuYx9Fk4=
+github.com/rh-messaging/shipshape v0.0.0-20191219233633-042a96f45312 h1:Y1wCA+Jfg1H8rQrsanV1MFSNIqn3eEZ4Ds3WsvEX6oM=
+github.com/rh-messaging/shipshape v0.0.0-20191219233633-042a96f45312/go.mod h1:1Nq7TQeRwM/tmFlRWczyR8E8ikZ3Pam8MJKQuYx9Fk4=
 github.com/rogpeppe/go-internal v1.3.0/go.mod h1:M8bDsm7K2OlrFYOpmOWEs/qY81heoFRclV5y23lUDJ4=
 github.com/spf13/afero v1.2.2/go.mod h1:9ZxEEn6pIJ8Rxe320qSDBk6AsU0r9pR7Q4OcevTdifk=
 github.com/spf13/pflag v1.0.1 h1:aCvUg6QPl3ibpQUxyLkrEkCHtPqYJL4x9AuhqVqFis4=

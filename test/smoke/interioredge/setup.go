@@ -1,22 +1,18 @@
 package interioredge
 
 import (
-	"bytes"
-	"fmt"
 	"github.com/interconnectedcloud/qdr-operator/pkg/apis/interconnectedcloud/v1alpha1"
 	"github.com/onsi/ginkgo"
 	"github.com/onsi/gomega"
+	"github.com/rh-messaging/qdr-shipshape/pkg/messaging"
 	"github.com/rh-messaging/qdr-shipshape/pkg/spec/interconnect"
-	"github.com/rh-messaging/shipshape/pkg/api/client/amqp/qeclients"
 	"github.com/rh-messaging/shipshape/pkg/apps/qdrouterd/deployment"
 	"github.com/rh-messaging/shipshape/pkg/apps/qdrouterd/qdrmanagement"
 	"github.com/rh-messaging/shipshape/pkg/apps/qdrouterd/qdrmanagement/entities"
 	"github.com/rh-messaging/shipshape/pkg/framework"
-	"github.com/rh-messaging/shipshape/pkg/framework/log"
 	"github.com/rh-messaging/shipshape/pkg/framework/operators"
 	v1 "k8s.io/api/core/v1"
 	v12 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"strconv"
 )
 
 var (
@@ -27,6 +23,9 @@ var (
 
 	IcInteriorWest           *v1alpha1.InterconnectSpec
 	IcEdgeWest1, IcEdgeWest2 *v1alpha1.InterconnectSpec
+
+	ConfigMap *v1.ConfigMap
+	AllRouterNames = []string{NameIcInteriorEast, NameIcInteriorWest, NameEdgeEast1, NameEdgeEast2, NameEdgeWest1, NameEdgeWest2}
 )
 
 const (
@@ -36,6 +35,7 @@ const (
 	NameEdgeEast2      = "edge-east-2"
 	NameEdgeWest1      = "edge-west-1"
 	NameEdgeWest2      = "edge-west-2"
+	ConfigMapName      = "messaging-files"
 )
 
 // Creates a unique namespace prefixed as "e2e-tests-smoke"
@@ -49,18 +49,9 @@ var _ = ginkgo.JustBeforeEach(func() {
 
 	ctx := FrameworkSmoke.GetFirstContext()
 
-	cfgMap, err := ctx.Clients.KubeClient.CoreV1().ConfigMaps(ctx.Namespace).Create(&v1.ConfigMap{
-		ObjectMeta: v12.ObjectMeta{
-			Name: "messaging-files",
-		},
-		Data: map[string]string{
-			"small-message.txt":  generateMessageContent("ThisIsARepeatableMessage", 1024),
-			"medium-message.txt": generateMessageContent("ThisIsARepeatableMessage", 1024 * 100),
-			"large-message.txt":  generateMessageContent("ThisIsARepeatableMessage", 1024 * 500),
-		},
-	})
-	gomega.Expect(err).To(gomega.BeNil())
-	gomega.Expect(cfgMap).NotTo(gomega.BeNil())
+	// Generates a config map with messaging files (content) to be
+	// used by the AMQP QE Clients
+	generateMessagingFilesConfigMap()
 
 	//
 	// Initializing the specs
@@ -74,72 +65,6 @@ var _ = ginkgo.JustBeforeEach(func() {
 	deployInterconnect(ctx, NameIcInteriorEast, IcInteriorEast)
 	deployInterconnect(ctx, NameIcInteriorWest, IcInteriorWest)
 
-	// Creating a python sender manually
-	url := fmt.Sprintf("amqp://%s:5672/anycast/messaging", NameIcInteriorEast)
-	sdr, err := qeclients.NewAmqpSender(qeclients.Python, "sender", *ctx, url, 1, "abcdef")
-	pSdr := sdr.(*qeclients.AmqpPythonSender)
-	pSdr.Pod.Spec.Containers[0].VolumeMounts = []v1.VolumeMount{
-		{Name: "messaging-files", ReadOnly: true, MountPath: "/opt/messaging-files"},
-	}
-	pSdr.Pod.Spec.Volumes = []v1.Volume{
-		{Name: "messaging-files", VolumeSource: v1.VolumeSource{
-			ConfigMap: &v1.ConfigMapVolumeSource{
-				LocalObjectReference: v1.LocalObjectReference{Name:"messaging-files"},
-			},
-		}},
-	}
-
-	// workaround to change cmd line args
-	pSdr.Pod.Spec.Containers[0].Args = []string{
-		"--count",
-		strconv.Itoa(10),
-		"--timeout",
-		strconv.Itoa(600),
-		"--broker-url",
-		url,
-		"--msg-content-from-file",
-		"/opt/messaging-files/medium-message.txt",
-		"--log-msgs",
-		"json",
-		"--on-release",
-		"retry",
-	}
-	err = pSdr.Deploy()
-	gomega.Expect(err).To(gomega.BeNil())
-
-	rcv, err := qeclients.NewAmqpReceiver(qeclients.Python, "receiver", *ctx, url, 10)
-	pRcv := rcv.(*qeclients.AmqpPythonReceiver)
-	pRcv.Pod.Spec.Containers[0].Args = []string{
-		"--count",
-		strconv.Itoa(10),
-		"--timeout",
-		strconv.Itoa(600),
-		"--broker-url",
-		url,
-		"--log-msgs",
-		"json",
-	}
-	err = pRcv.Deploy()
-	gomega.Expect(err).To(gomega.BeNil())
-
-	pSdr.Wait()
-	pRcv.Wait()
-
-	//log.Logf("\n\nGO CHECK LOGS:\n\nkubectl -n %s logs sender\n\n", ctx.Namespace)
-	//time.Sleep(5 * time.Minute)
-	//
-	// Validating results
-	senderResult := pSdr.Result()
-	receiverResult := pRcv.Result()
-
-	// Ensure results obtained
-	gomega.Expect(senderResult).NotTo(gomega.BeNil())
-	gomega.Expect(receiverResult).NotTo(gomega.BeNil())
-
-	// Validate sent/received messages
-	gomega.Expect(senderResult.Delivered).To(gomega.Equal(10))
-	gomega.Expect(receiverResult.Delivered).To(gomega.Equal(10))
-
 	//
 	// Deploy Edge Routers
 	//
@@ -151,35 +76,64 @@ var _ = ginkgo.JustBeforeEach(func() {
 	//
 	// Asserting that network is properly formed
 	//
-	validateNetwork()
+	validateNetwork(NameIcInteriorEast)
+	validateNetwork(NameIcInteriorWest)
 })
 
-func generateMessageContent(pattern string, size int) string {
-	var buf bytes.Buffer
-	patLen := len(pattern)
-	times := size / patLen
-	rem := size % patLen
-	for i := 0; i < times; i++ {
-		buf.WriteString(pattern)
-	}
-	if rem > 0 {
-		buf.WriteString(pattern[:rem])
-	}
-	return buf.String()
+// generateMessagingFilesConfigMap creates a new config map that holds messaging
+// files to be used by QE clients. It generates a 1kb, 100kb and 500kb files.
+// Note: there is a threshold on the ConfigMap size of 1mb. If larger messages are
+//       needed within QE Clients, we should change container init strategy when
+//       defining the pod, so it downloads files during initialization (not sure if
+//       that is a good idea.
+func generateMessagingFilesConfigMap() {
+	var err error
+	ctx := FrameworkSmoke.GetFirstContext()
+	ConfigMap, err = ctx.Clients.KubeClient.CoreV1().ConfigMaps(ctx.Namespace).Create(&v1.ConfigMap{
+		ObjectMeta: v12.ObjectMeta{
+			Name: ConfigMapName,
+		},
+		Data: map[string]string{
+			"small-message.txt":  messaging.GenerateMessageContent("ThisIsARepeatableMessage", 1024),
+			"medium-message.txt": messaging.GenerateMessageContent("ThisIsARepeatableMessage", 1024*100),
+			"large-message.txt":  messaging.GenerateMessageContent("ThisIsARepeatableMessage", 1024*500),
+		},
+	})
+	gomega.Expect(err).To(gomega.BeNil())
+	gomega.Expect(ConfigMap).NotTo(gomega.BeNil())
 }
 
-func validateNetwork() {
+// validateNetwork retrieves router nodes from all interior pods
+// as well as the number of edge connections to each. Then it
+// validates number of interior nodes and edge connections match
+// expected values.
+func validateNetwork(interiorName string) {
 
+	ginkgo.By("Validating network on " + interiorName)
 	ctx := FrameworkSmoke.GetFirstContext()
 
-	podList, err := ctx.ListPodsForDeploymentName(NameIcInteriorEast)
+	podList, err := ctx.ListPodsForDeploymentName(interiorName)
 	gomega.Expect(err).To(gomega.BeNil())
 
+	connectedEdges := 0
 	for _, pod := range podList.Items {
-		nodes, err := qdrmanagement.QdmanageQuery(*ctx, pod.Name, entities.Node{}, nil)
+		// Expect that the 4 interior routers are showing up
+		nodes, err := qdrmanagement.QdmanageQueryWithRetries(*ctx, pod.Name, entities.Node{}, 10,
+			60, nil, func(es []entities.Entity, err error) bool {
+				return err != nil || len(es) == 4
+			})
 		gomega.Expect(err).To(gomega.BeNil())
-		log.Logf("Nodes = %v", nodes)
+		gomega.Expect(len(nodes)).To(gomega.Equal(4))
+
+		// Expect that edge routers are connected
+		conns, err := qdrmanagement.QdmanageQuery(*ctx, pod.Name, entities.Connection{}, func(e entities.Entity) bool {
+			c := e.(entities.Connection)
+			return c.Role == "edge"
+		})
+		gomega.Expect(err).To(gomega.BeNil())
+		connectedEdges += len(conns)
 	}
+	gomega.Expect(connectedEdges).To(gomega.Equal(2))
 }
 
 func deployInterconnect(ctx *framework.ContextData, icName string, icSpec *v1alpha1.InterconnectSpec) {
@@ -209,9 +163,6 @@ func initializeInteriors() {
 		{
 			Host:           interconnect.GetDefaultServiceName(NameIcInteriorEast, ctx.Namespace),
 			Port:           55672,
-			RouteContainer: false,
-			VerifyHostname: false,
-			SslProfile:     "",
 		},
 	}
 
