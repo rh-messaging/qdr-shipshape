@@ -32,6 +32,6 @@ before_install:
   - kind create cluster
   - kubectl cluster-info
 
-
 script:
   - env GO111MODULE=on make travis-tests
+  - env GO111MODULE=on make unittests

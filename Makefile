@@ -10,7 +10,7 @@ build:
 	go build ./...
 
 .PHONY: all-tests
-all-tests: build
+all-tests: build unittests
 	ginkgo -v -r ./test
 
 .PHONY: smoke-tests
@@ -20,3 +20,7 @@ smoke-tests: build
 .PHONY: travis-tests
 travis-tests:
 	ginkgo -v -r ./test/travis
+
+.PHONY: unittests
+unittests:
+	go test -count=1 -v ./pkg/...
