@@ -78,6 +78,7 @@ var _ = ginkgo.JustBeforeEach(func() {
 	//
 	validateNetwork(NameIcInteriorEast)
 	validateNetwork(NameIcInteriorWest)
+
 })
 
 // generateMessagingFilesConfigMap creates a new config map that holds messaging
@@ -198,7 +199,7 @@ func defaultEdgeSpec(interiorIcName, ns string) *v1alpha1.InterconnectSpec {
 		},
 		EdgeConnectors: []v1alpha1.Connector{
 			{
-				Host: interconnect.GetDefaultServiceName(interiorIcName, ns),
+				Host: interiorIcName,
 				Port: 45672,
 			},
 		},
