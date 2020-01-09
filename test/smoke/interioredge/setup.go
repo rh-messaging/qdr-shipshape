@@ -199,7 +199,7 @@ func defaultEdgeSpec(interiorIcName, ns string) *v1alpha1.InterconnectSpec {
 		},
 		EdgeConnectors: []v1alpha1.Connector{
 			{
-				Host: interiorIcName,
+				Host: interconnect.GetDefaultServiceName(interiorIcName, ns),
 				Port: 45672,
 			},
 		},
