@@ -15,6 +15,7 @@ import (
 var _ = Describe("Exchanges AnyCast messages across the nodes", func() {
 
 	It("exchanges 100 small messages", func() {
+
 		// TODO Sample implementation
 		//      Need to investigate why it is failing when connecting to more than 1 router
 		ctx := FrameworkSmoke.GetFirstContext()
@@ -71,6 +72,7 @@ func deployReceivers(ctx *framework.ContextData, icName string, receiverName str
 		for i := 0; i < numberOfReceivers; i++ {
 		rBuilder := qeclients.NewReceiverBuilder(receiverName + "-" + strconv.Itoa(i+1), impl, *ctx, url)
 		rBuilder.Messages(messages)
+		rBuilder.Timeout(300)
 		rcv, err := rBuilder.Build()
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 		gomega.Expect(rcv).NotTo(gomega.BeNil())
@@ -94,6 +96,7 @@ func deploySenders(ctx *framework.ContextData, icName string, senderName string,
 	url := fmt.Sprintf("amqp://%s:5672/anycastAddress", interconnect.GetDefaultServiceName(icName, ctx.Namespace))
 	for i := 0; i < numberOfSenders; i++ {
 		psBuilder := qeclients.NewSenderBuilder(senderName + "-" + strconv.Itoa(i+1), impl, *ctx, url)
+		psBuilder.Timeout(300)
 		psBuilder.Messages(messages)
 		psBuilder.MessageContentFromFile(ConfigMapName, contentFile)
 		sdr, err := psBuilder.Build()
