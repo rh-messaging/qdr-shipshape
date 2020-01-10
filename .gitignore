@@ -13,3 +13,6 @@
 
 # IDE related files
 .idea
+
+# Clients pycache stuff
+**/__pycache__/
