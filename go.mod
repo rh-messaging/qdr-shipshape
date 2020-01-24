@@ -8,7 +8,7 @@ require (
 	github.com/onsi/gomega v1.7.1
 	github.com/openshift/api v3.9.0+incompatible // indirect
 	github.com/openshift/client-go v3.9.0+incompatible // indirect
-	github.com/rh-messaging/shipshape v0.0.0-20191220151334-9be6bf56be0a
+	github.com/rh-messaging/shipshape v0.0.0-20200124190800-dce475d5a391
 	k8s.io/api v0.0.0-20181126151915-b503174bad59
 	k8s.io/apimachinery v0.0.0-20181126123746-eddba98df674
 	k8s.io/klog v0.3.1

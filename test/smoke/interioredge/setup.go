@@ -22,9 +22,12 @@ const (
 // Creates a unique namespace prefixed as "e2e-tests-smoke"
 var _ = ginkgo.BeforeEach(func() {
 	// Initializes using only Qdr Operator
+	// TODO Remove custom image (used for debugging routers)
+	qdrOperator := operators.SupportedOperators[operators.OperatorTypeQdr]
+	//qdrOperator.WithImage("docker.io/fgiorgetti/qdr-operator:latest")
 	builder := framework.
 		NewFrameworkBuilder("smoke").
-		WithBuilders(operators.SupportedOperators[operators.OperatorTypeQdr])
+		WithBuilders(qdrOperator)
 
 	// Create framework instance and topology
 	TopologySmoke = smokev1.CreateSmokeRouterOnlyTopology(builder)

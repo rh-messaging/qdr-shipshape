@@ -2,7 +2,7 @@ package testcommon
 
 const (
 	TimeoutSetupTeardown = 20
-	PropertyImageQPIDDispatch = "image.qpid-dispatch"
+	PropertyImageQPIDDispatch = "QDROUTERD_IMAGE"
 )
 
 func GetEnvProperty(key string, defaultValue string) string {

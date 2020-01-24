@@ -72,6 +72,10 @@ github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZb
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/rh-messaging/shipshape v0.0.0-20191220151334-9be6bf56be0a h1:ilAtSKx/aahiXKejZmBNkZvl01IUXSJHRTfyT5lSeoA=
 github.com/rh-messaging/shipshape v0.0.0-20191220151334-9be6bf56be0a/go.mod h1:2JZ19hT2+X3u4a98L0hywfU8g45OmhAcpUiQ9Ov6YP4=
+github.com/rh-messaging/shipshape v0.0.0-20200124182748-8374b15c2c74 h1:GR3HrYUeconJ6rIbr8veTA99GLi1l4+mm2JPSpbXhVE=
+github.com/rh-messaging/shipshape v0.0.0-20200124182748-8374b15c2c74/go.mod h1:2JZ19hT2+X3u4a98L0hywfU8g45OmhAcpUiQ9Ov6YP4=
+github.com/rh-messaging/shipshape v0.0.0-20200124190800-dce475d5a391 h1:SQX99oc6q+IbzoAb5FDjgTb/6UYmQ+TDTD2TcjuoPVw=
+github.com/rh-messaging/shipshape v0.0.0-20200124190800-dce475d5a391/go.mod h1:2JZ19hT2+X3u4a98L0hywfU8g45OmhAcpUiQ9Ov6YP4=
 github.com/rogpeppe/go-internal v1.3.0/go.mod h1:M8bDsm7K2OlrFYOpmOWEs/qY81heoFRclV5y23lUDJ4=
 github.com/spf13/afero v1.2.2/go.mod h1:9ZxEEn6pIJ8Rxe320qSDBk6AsU0r9pR7Q4OcevTdifk=
 github.com/spf13/pflag v1.0.1 h1:aCvUg6QPl3ibpQUxyLkrEkCHtPqYJL4x9AuhqVqFis4=
