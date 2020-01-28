@@ -1,17 +1,13 @@
 package testcommon
 
 const (
+	ConfigFile           = "config.ini"
+	ConfigDirEnvVar      = "CONFIG_DIR"
+	DefaultSection       = "DEFAULT"
 	TimeoutSetupTeardown = 20
-	PropertyImageQPIDDispatch = "QDROUTERD_IMAGE"
+
+	// Default properties (or environment variable names)
+	PropertyDebug             = "DEBUG"
+	PropertyImageQPIDDispatch = "IMAGE_QDROUTERD"
+	PropertyImageQDrOperator  = "IMAGE_QDROPERATOR"
 )
-
-func GetEnvProperty(key string, defaultValue string) string {
-
-	if key == "" {
-		return defaultValue
-	}
-
-	// TODO Implement lookup mechanism to search for given key on
-	//      environment and properties files.
-	return defaultValue
-}

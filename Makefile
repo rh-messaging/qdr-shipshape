@@ -17,6 +17,10 @@ all-tests: build
 smoke-tests: build
 	ginkgo -v -r ./test/smoke
 
+.PHONY: unit-tests
+unit-tests:
+	go test -v "./pkg/..."
+
 .PHONY: images
 images: build clients-python
 

@@ -44,7 +44,7 @@ func runMulticastTest(msgCount int, msgSize int, numClients int, allRouterNames 
 	senders := []*python.PythonClient{}
 	for _, routerName := range allRouterNames {
 		sndName := fmt.Sprintf("sender-pythonbasic-%s", routerName)
-		senders = append(senders, python.DeployPythonClient(ctx, routerName, sndName, multicastAddress, python.BasicSender, numClients, msgCount, msgSize, timeout)...)
+		senders = append(senders, python.DeployPythonClient(ctx, routerName, sndName, multicastAddress, IsDebugEnabled(), python.BasicSender, numClients, msgCount, msgSize, timeout)...)
 	}
 
 	// Deploying all receivers across all nodes
@@ -52,7 +52,7 @@ func runMulticastTest(msgCount int, msgSize int, numClients int, allRouterNames 
 	receivers := []*python.PythonClient{}
 	for _, routerName := range allRouterNames {
 		rcvName := fmt.Sprintf("receiver-pythonbasic-%s", routerName)
-		receivers = append(receivers, python.DeployPythonClient(ctx, routerName, rcvName, multicastAddress, python.BasicReceiver, numClients, perReceiverMsgCount, msgSize, timeout)...)
+		receivers = append(receivers, python.DeployPythonClient(ctx, routerName, rcvName, multicastAddress, IsDebugEnabled(), python.BasicReceiver, numClients, perReceiverMsgCount, msgSize, timeout)...)
 	}
 
 	//TODO split this function into more cohesive ones

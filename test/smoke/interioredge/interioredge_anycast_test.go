@@ -21,7 +21,6 @@ import (
 )
 
 var (
-	AnycastDebug = false
 	SnapshotRouterLinks = false
 	SnapshotDelay = 10 * time.Second
 	WG sync.WaitGroup
@@ -30,7 +29,6 @@ var (
 var _ = Describe("Exchange AnyCast messages across all nodes", func() {
 
 	const (
-		numberClients = 1
 		totalSmall    = 100000
 		totalMedium   = 10000
 		totalLarge    = 1000
@@ -39,11 +37,10 @@ var _ = Describe("Exchange AnyCast messages across all nodes", func() {
 	var (
 		//allRouterNames = []string{"interior-east"}
 		allRouterNames = TopologySmoke.AllRouterNames()
-		totalSenders   = numberClients * len(allRouterNames)
 	)
 
-	It(fmt.Sprintf("exchanges %d small messages with 1kb using %d senders and receivers", totalSmall, totalSenders), func() {
-		runAnycastTest(totalSmall, 1024, numberClients, allRouterNames)
+	It(fmt.Sprintf("exchanges %d small messages with 1kb using senders and receivers across all router nodes", totalSmall), func() {
+		runAnycastTest(totalSmall, 1024, allRouterNames)
 	})
 
 	//
@@ -52,16 +49,16 @@ var _ = Describe("Exchange AnyCast messages across all nodes", func() {
 	//
 
 	//It(fmt.Sprintf("exchanges %d medium messages with 100kb using %d senders and receivers", totalMedium, totalSenders), func() {
-	//	runAnycastTest(totalMedium, 1024*100, numberClients, allRouterNames)
+	//	runAnycastTest(totalMedium, 1024*100, allRouterNames)
 	//})
 
 	//It(fmt.Sprintf("exchanges %d large messages with 500kb using %d senders and receivers", totalLarge, totalSenders), func() {
-	//	runAnycastTest(totalLarge, 1024*500, numberClients, allRouterNames)
+	//	runAnycastTest(totalLarge, 1024*500, allRouterNames)
 	//})
 
 })
 
-func runAnycastTest(msgCount int, msgSize int, numClients int, allRouterNames []string) {
+func runAnycastTest(msgCount int, msgSize int, allRouterNames []string) {
 
 	const (
 		anycastAddress = "anycast/smoke/interioredge"
@@ -69,14 +66,17 @@ func runAnycastTest(msgCount int, msgSize int, numClients int, allRouterNames []
 		timeout        = 600
 	)
 	ctx := TopologySmoke.FrameworkSmoke.GetFirstContext()
-	SnapshotRouterLinks = AnycastDebug
+	SnapshotRouterLinks = IsDebugEnabled()
+
+	// Reading number of clients from config or use default of 1
+	numClients, _ := Config.GetEnvPropertyInt("NUMBER_CLIENTS", 1)
 
 	// Deploying all senders across all nodes
 	By("Deploying senders across all router nodes")
 	senders := []*python.PythonClient{}
 	for _, routerName := range allRouterNames {
 		sndName := fmt.Sprintf("sender-pythonbasic-%s", routerName)
-		senders = append(senders, python.DeployPythonClient(ctx, routerName, sndName, anycastAddress, python.BasicSender, numClients, msgCount, msgSize, timeout)...)
+		senders = append(senders, python.DeployPythonClient(ctx, routerName, sndName, anycastAddress, IsDebugEnabled(), python.BasicSender, numClients, msgCount, msgSize, timeout)...)
 	}
 
 	// Deploying all receivers across all nodes
@@ -84,7 +84,7 @@ func runAnycastTest(msgCount int, msgSize int, numClients int, allRouterNames []
 	receivers := []*python.PythonClient{}
 	for _, routerName := range allRouterNames {
 		rcvName := fmt.Sprintf("receiver-pythonbasic-%s", routerName)
-		receivers = append(receivers, python.DeployPythonClient(ctx, routerName, rcvName, anycastAddress, python.BasicReceiver, numClients, msgCount, msgSize, timeout)...)
+		receivers = append(receivers, python.DeployPythonClient(ctx, routerName, rcvName, anycastAddress, IsDebugEnabled(), python.BasicReceiver, numClients, msgCount, msgSize, timeout)...)
 	}
 
 	//TODO maybe remove this or make it a reusable component
@@ -114,7 +114,7 @@ func runAnycastTest(msgCount int, msgSize int, numClients int, allRouterNames []
 		totalSent := res.Delivered - res.Rejected - res.Released
 		sndResults = append(sndResults, results{delivered: totalSent, success: s.Status() == amqp.Success})
 
-		if AnycastDebug {
+		if IsDebugEnabled() {
 			saveLogs(s.Pod.Name)
 		}
 	}
@@ -131,12 +131,12 @@ func runAnycastTest(msgCount int, msgSize int, numClients int, allRouterNames []
 		// Adding receiver results
 		rcvResults = append(rcvResults, results{delivered: res.Delivered, success: r.Status() == amqp.Success})
 
-		if AnycastDebug {
+		if IsDebugEnabled() {
 			saveLogs(r.Pod.Name)
 		}
 	}
 
-	if AnycastDebug {
+	if IsDebugEnabled() {
 		for _, r := range allRouterNames {
 			pods, err := ctx.ListPodsForDeploymentName(r)
 			if err != nil {

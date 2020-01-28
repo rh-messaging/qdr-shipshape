@@ -3,16 +3,16 @@ package interioredge
 import (
 	"github.com/onsi/ginkgo"
 	"github.com/onsi/gomega"
-	"github.com/rh-messaging/qdr-shipshape/pkg/messaging"
+	"github.com/rh-messaging/qdr-shipshape/pkg/testcommon"
 	"github.com/rh-messaging/qdr-shipshape/pkg/topologies/smokev1"
 	"github.com/rh-messaging/shipshape/pkg/framework"
 	"github.com/rh-messaging/shipshape/pkg/framework/operators"
-	v1 "k8s.io/api/core/v1"
 )
 
 var (
 	TopologySmoke *smokev1.SmokeRouterOnlyTopology
-	ConfigMap     *v1.ConfigMap
+	//ConfigMap     *v1.ConfigMap
+	Config        *testcommon.Config
 )
 
 const (
@@ -21,20 +21,22 @@ const (
 
 // Creates a unique namespace prefixed as "e2e-tests-smoke"
 var _ = ginkgo.BeforeEach(func() {
+	// Loading configuration (ini or environment)
+	Config = testcommon.LoadConfig("smoke/interioredge")
+
 	// Initializes using only Qdr Operator
-	// TODO Remove custom image (used for debugging routers)
 	qdrOperator := operators.SupportedOperators[operators.OperatorTypeQdr]
-	//qdrOperator.WithImage("docker.io/fgiorgetti/qdr-operator:latest")
+	qdrOperator.WithImage(Config.GetEnvProperty(testcommon.PropertyImageQDrOperator,"quay.io/interconnectedcloud/qdr-operator:latest"))
 	builder := framework.
 		NewFrameworkBuilder("smoke").
 		WithBuilders(qdrOperator)
 
 	// Create framework instance and topology
-	TopologySmoke = smokev1.CreateSmokeRouterOnlyTopology(builder)
+	TopologySmoke = smokev1.CreateSmokeRouterOnlyTopology(Config, builder)
 
 	// Generates a config map with messaging files (content) to be
 	// used by the AMQP QE Clients
-	ConfigMap = messaging.GenerateSmallMediumLargeMessagesConfigMap(TopologySmoke.FrameworkSmoke, ConfigMapName)
+	//ConfigMap = messaging.GenerateSmallMediumLargeMessagesConfigMap(TopologySmoke.FrameworkSmoke, ConfigMapName)
 })
 
 // Initializes the Interconnect (CR) specs to be deployed
@@ -57,3 +59,8 @@ var _ = ginkgo.JustBeforeEach(func() {
 var _ = ginkgo.AfterEach(func() {
 	TopologySmoke.FrameworkSmoke.AfterEach()
 })
+
+// IsDebugEnabled returns true if DEBUG env var or property is true
+func IsDebugEnabled() bool {
+	return Config.GetEnvPropertyBool("DEBUG", false)
+}
