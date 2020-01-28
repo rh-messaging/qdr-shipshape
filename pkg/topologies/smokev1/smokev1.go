@@ -193,7 +193,6 @@ func (s *SmokeRouterOnlyTopology) initializeInteriors() {
 }
 
 func (s *SmokeRouterOnlyTopology) defaultInteriorSpec() *v1alpha1.InterconnectSpec {
-	// TODO Define a standard configuration file that allows images to be customized
 	return &v1alpha1.InterconnectSpec{
 		DeploymentPlan: v1alpha1.DeploymentPlanType{
 			Size:      2,

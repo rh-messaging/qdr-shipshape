@@ -1,7 +1,6 @@
 package testcommon
 
 func RegisterFlags() {
-	//TODO Define custom flags
-	//     Need to define a config file that can be used to customize
-	//     image names and etc
+	//TODO Define custom flags (if any)
+	//     that should be common to all suites across qdr-shipshape
 }
