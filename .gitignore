@@ -16,3 +16,6 @@
 
 # Clients pycache stuff
 **/__pycache__/
+
+# Java target folders
+**/target/
