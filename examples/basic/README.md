@@ -99,6 +99,7 @@ The example test suite is located at *test/* directory and it contains three fil
 ## Running the basic example
 
 First you must have a KUBECONFIG environment variable set and must be logged in to a Kubernetes or OpenShift cluster using a cluster-admin user.
+*NOTE:* qdr-shipshape expects you to use go 1.13+.
 
 Next all you have to do is just run the following command:
 
