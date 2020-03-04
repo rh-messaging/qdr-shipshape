@@ -29,3 +29,7 @@ clients-python:
 	docker build -t qdrshipshape/clients-python clients/python/
 	docker tag qdrshipshape/clients-python docker.io/qdrshipshape/clients-python
 	docker push docker.io/qdrshipshape/clients-python
+
+.PHONY: travis-tests
+travis-tests:
+	ginkgo -v -r ./test/travis
