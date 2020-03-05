@@ -1,0 +1,38 @@
+sudo: required
+dist: bionic
+language: go
+go:
+  - master
+
+go_import_path: github.com/rh-messaging/qdr-shipshape
+
+services:
+  - docker
+
+git:
+  depth: 1
+
+env:
+  global:
+    - KUBECONFIG=$HOME/.kube/config
+    - KUBERNETES_VERSION=$(curl -k -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)
+    - GO111MODULE=on
+
+before_install:
+  # Setup kubectl
+  - curl -Lo kubectl https://storage.googleapis.com/kubernetes-release/release/${KUBERNETES_VERSION}/bin/linux/amd64/kubectl
+  - chmod +x kubectl
+  - sudo mv kubectl /usr/local/bin/
+
+  # Get tools
+  - env GO111MODULE=off go get sigs.k8s.io/kind
+  - env GO111MODULE=off go get -u github.com/onsi/ginkgo/ginkgo
+
+  # Create a new Kubernetes cluster using KinD
+  - kind create cluster
+  - kubectl cluster-info
+
+
+script:
+  - env GO111MODULE=on make travis-tests
+  - make unit-tests
