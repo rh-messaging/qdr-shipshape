@@ -4,6 +4,7 @@ import (
 	"fmt"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	qdr_python_client "github.com/rh-messaging/qdr-shipshape/pkg/clients/python"
 	"github.com/rh-messaging/qdr-shipshape/pkg/spec/interconnect"
 	"github.com/rh-messaging/shipshape/pkg/api/client/amqp"
 	"github.com/rh-messaging/shipshape/pkg/api/client/amqp/qeclients"
@@ -27,7 +28,7 @@ var _ = Describe("Exchanges AnyCast messages across the nodes", func() {
 		base_url := fmt.Sprintf("amqp://%s:5672/", interconnect.GetDefaultServiceName(IcInteriorRouterName, ctx.Namespace))
 		url := base_url + "anycastAddress"
 
-		By("Deploying one Python sender and one Python receiver")
+		By("Deploying one python-qeclient sender and one python-qeclient receiver")
 
 		pythonSenderBuilder := qeclients.NewSenderBuilder("sender-"+IcInteriorRouterName, qeclients.Python, *ctx, url)
 		pythonSenderBuilder.Messages(MessageCount)
@@ -63,5 +64,29 @@ var _ = Describe("Exchanges AnyCast messages across the nodes", func() {
 		Expect(pythonReceiver.Result().Delivered).To(Equal(MessageCount))
 		Expect(pythonSender.Result().Delivered).To(Equal(MessageCount))
 
+		By("Deploying one qdr-python-sender and one qdr-python-receiver")
+		sender := qdr_python_client.DeployPythonClient(ctx, IcInteriorRouterName, "sender-"+IcInteriorRouterName, "anycast/some", true, qdr_python_client.BasicSender, 1, 1, 128, 60)[0]
+		receiver := qdr_python_client.DeployPythonClient(ctx, IcInteriorRouterName, "receiver-"+IcInteriorRouterName, "anycast/some", true, qdr_python_client.BasicReceiver, 1, 1, 128, 60)[0]
+
+		sender.Wait()
+		receiver.Wait()
+		sender_result := sender.Result()
+		receiver_result := receiver.Result()
+
+		Expect(sender.Name).To(Equal("sender-interior-0"))
+		Expect(sender.Status()).To(Equal(amqp.Success))
+		Expect(sender_result.Delivered).To(Equal(1))
+		Expect(sender_result.Released).To(Equal(0))
+		Expect(sender_result.Rejected).To(Equal(0))
+		Expect(sender_result.Modified).To(Equal(0))
+		Expect(sender_result.Accepted).To(Equal(1))
+
+		Expect(receiver.Name).To(Equal("receiver-interior-0"))
+		Expect(receiver.Status()).To(Equal(amqp.Success))
+		Expect(receiver_result.Delivered).To(Equal(1))
+		Expect(receiver_result.Released).To(Equal(0))
+		Expect(receiver_result.Rejected).To(Equal(0))
+		Expect(receiver_result.Modified).To(Equal(0))
+		Expect(receiver_result.Accepted).To(Equal(0))
 	})
 })
