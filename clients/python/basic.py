@@ -64,6 +64,8 @@ class BasicCommon(MessagingHandler):
             self.set_error(e.__str__())
             error = True
         finally:
+            if self._container:
+                self._container.stop()
             signal.signal(signal.SIGALRM, signal.SIG_IGN)
             time.sleep(5)
             # This must be the last thing in the output (which will be parsed by test suite)
