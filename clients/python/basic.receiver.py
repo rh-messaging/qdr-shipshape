@@ -31,6 +31,7 @@ class BasicReceiver(BasicCommon):
         if self.result_data.delivered < self._msgcount:
             self.result_data.delivered += 1
             self.accept(event.delivery)
+            event.delivery.settle()
             logging.debug("message received: %s" % self._last_received_id)
 
             # If body does not match expected value

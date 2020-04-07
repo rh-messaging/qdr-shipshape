@@ -1,4 +1,5 @@
 from proton import Message
+from proton.reactor import AtLeastOnce
 from basic import BasicCommon
 import uuid
 import sys
@@ -10,6 +11,8 @@ class BasicSender(BasicCommon):
         super(BasicSender, self).__init__()
         # Sender specifics
         self._sender = None
+        self._released_tags = []
+        self._multicast = 'multicast' in self._url
 
     #
     # Internal methods
@@ -19,6 +22,10 @@ class BasicSender(BasicCommon):
         # Must be done first (to block a possible retry in case done sending)
         if self.done_sending():
             return False
+
+        # when multicast always send
+        if self._multicast:
+            return True
 
         # Number of pending acks (sent - released - accepted)
         pendingacks = rd.delivered - rd.released - rd.accepted
@@ -52,13 +59,26 @@ class BasicSender(BasicCommon):
         logging.debug("message accepted: %s" % event.delivery.tag)
         self.result_data.accepted += 1
 
-        if self.done_sending():
+        if not self._multicast and self.done_sending():
+            self.done(event)
+
+    def done(self, event):
             logging.debug("done sending")
             event.sender.close()
             event.connection.close()
 
-
     def on_released(self, event):
+        # this is to prevent an issue we faced with two on_released
+        # calls happening for same delivery tag
+        # related proton frames below:
+        #
+        # [0x562a0083ed80]:0 <- @disposition(21) [role=true, first=981, state=@released(38) []]
+        # [0x562a0083ed80]:0 <- @disposition(21) [role=true, first=981, last=982, settled=true, state=@released(38) []]
+        #
+        # in the sample above, the on_released was invoked 3 times for: 981, 981 and 982.
+        if event.delivery.tag in self._released_tags:
+            return
+        self._released_tags.append(event.delivery.tag)
         logging.debug("message released: %s" % event.delivery.tag)
         self.result_data.released += 1
         self.send(event, 'on_released')
