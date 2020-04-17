@@ -7,9 +7,7 @@ require (
 	github.com/interconnectedcloud/qdr-operator v0.0.0-20190925113122-f866a55bebf0
 	github.com/onsi/ginkgo v1.11.0
 	github.com/onsi/gomega v1.8.1
-	github.com/openshift/api v3.9.0+incompatible // indirect
-	github.com/openshift/client-go v3.9.0+incompatible // indirect
-	github.com/rh-messaging/shipshape v0.1.1
+	github.com/rh-messaging/shipshape v0.1.3
 	github.com/smartystreets/goconvey v1.6.4 // indirect
 	github.com/spf13/pflag v1.0.1 // indirect
 	gopkg.in/ini.v1 v1.51.1 // indirect
