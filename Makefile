@@ -26,9 +26,9 @@ images: build clients-python
 
 .PHONY: clients-python
 clients-python:
-	docker build -t qdrshipshape/clients-python clients/python/
-	docker tag qdrshipshape/clients-python docker.io/qdrshipshape/clients-python
-	docker push docker.io/qdrshipshape/clients-python
+	docker build -t qdrshipshape/clients-python:dispatch-1626 clients/python/
+	docker tag qdrshipshape/clients-python:dispatch-1626 docker.io/qdrshipshape/clients-python:dispatch-1626
+	docker push docker.io/qdrshipshape/clients-python:dispatch-1626
 
 .PHONY: travis-tests
 travis-tests:

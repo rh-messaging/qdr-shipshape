@@ -22,6 +22,7 @@ func DeployPythonClient(ctx *framework.ContextData, icName, clientName, address 
 		builder.EnvVar("MSG_COUNT", strconv.Itoa(msgCount))
 		builder.EnvVar("MSG_SIZE", strconv.Itoa(msgSize))
 		builder.Timeout(timeout)
+		builder.ImageCustom("docker.io/qdrshipshape/clients-python:dispatch-1626")
 		c := builder.Build()
 		gomega.Expect(c).NotTo(gomega.BeNil())
 		res = append(res, c)
