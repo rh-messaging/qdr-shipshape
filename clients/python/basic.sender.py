@@ -76,8 +76,8 @@ class BasicSender(BasicCommon):
         # [0x562a0083ed80]:0 <- @disposition(21) [role=true, first=981, last=982, settled=true, state=@released(38) []]
         #
         # in the sample above, the on_released was invoked 3 times for: 981, 981 and 982.
-        if event.delivery.tag in self._released_tags:
-            return
+#         if event.delivery.tag in self._released_tags:
+#             return
         self._released_tags.append(event.delivery.tag)
         logging.debug("message released: %s" % event.delivery.tag)
         self.result_data.released += 1
