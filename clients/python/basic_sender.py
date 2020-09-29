@@ -1,6 +1,6 @@
 from proton import Message
 from proton.reactor import AtLeastOnce
-from .basic import BasicCommon
+from basic import BasicCommon
 import uuid
 import sys
 import logging
