@@ -1,6 +1,6 @@
 from proton import Message
 from proton.reactor import AtLeastOnce
-from basic import BasicCommon
+from .basic import BasicCommon
 import uuid
 import sys
 import logging
@@ -44,16 +44,23 @@ class BasicSender(BasicCommon):
         self._sender = event.container.create_sender(self._url)
 
     def on_sendable(self, event):
-        self.send(event, 'on_senable')
+        self.send(event, 'on_sendable')
 
     def send(self, event, source):
-        if not event.sender.credit or not self.can_send():
-            logging.debug("[%s] unable to send - credit: %s - partial results: %s" % (source, event.sender.credit, self.result_data))
+        if not self._sender.credit or not self.can_send():
+            print("[%s] unable to send - credit: %s - partial results: %s" % (source, self._sender.credit, self.result_data))
+            logging.debug("[%s] unable to send - credit: %s - partial results: %s" % (source, self._sender.credit, self.result_data))
+            # retry in 1 sec
+            if not self.done_sending():
+                event.reactor.schedule(1, self)
             return
-        logging.debug("[%s] message sent: credit: %s - partial results: %s" % (source, event.sender.credit, self.result_data))
+        logging.debug("[%s] message sent: credit: %s - partial results: %s" % (source, self._sender.credit, self.result_data))
         msg = Message(id=str(uuid.uuid1()), body=self._expected_body)
-        event.sender.send(msg)
+        self._sender.send(msg)
         self.result_data.delivered += 1
+
+    def on_timer_task(self, event):
+        self.send(event, "on_timer_task")
 
     def on_accepted(self, event):
         logging.debug("message accepted: %s" % event.delivery.tag)

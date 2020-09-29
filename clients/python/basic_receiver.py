@@ -1,4 +1,4 @@
-from basic import BasicCommon
+from .basic import BasicCommon
 import sys
 import time
 import logging
