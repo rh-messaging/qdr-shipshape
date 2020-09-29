@@ -15,8 +15,8 @@ type PythonClientCmd string
 
 const (
 	PythonClientImage string          = "docker.io/qdrshipshape/clients-python:latest"
-	BasicSender       PythonClientCmd = "basic.sender.py"
-	BasicReceiver     PythonClientCmd = "basic.receiver.py"
+	BasicSender       PythonClientCmd = "basic_sender.py"
+	BasicReceiver     PythonClientCmd = "basic_receiver.py"
 )
 
 type PythonClient struct {
