@@ -8,6 +8,7 @@ import (
 	"github.com/rh-messaging/shipshape/pkg/api/client/amqp"
 	"io"
 	v1 "k8s.io/api/core/v1"
+	"log"
 	"time"
 )
 
@@ -72,7 +73,9 @@ func (p *PythonClient) Result() amqp.ResultData {
 	// Unmarshalling PythonClientResult
 	var cliResult PythonClientResult
 	err = json.Unmarshal([]byte(line), &cliResult)
-	gomega.Expect(err).To(gomega.BeNil())
+	if err != nil {
+		log.Printf("error unmarshalling response from %s: %v - line: %s", p.Name, err, string(line))
+	}
 
 	// Generating result data
 	result := amqp.ResultData{
