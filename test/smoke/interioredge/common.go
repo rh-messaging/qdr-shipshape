@@ -71,17 +71,11 @@ func runSmokeTest(address string, msgCount int, msgSize int, allRouterNames []st
 		By("Validating sender results")
 		for _, s := range sndResults {
 			gomega.Expect(s.success).To(gomega.BeTrue())
-			gomega.Expect(s.delivered).To(gomega.Equal(msgCount))
 		}
 	}
 	By("Validating receiver results")
 	for _, r := range rcvResults {
 		gomega.Expect(r.success).To(gomega.BeTrue())
-		expectedReceived := msgCount
-		if strings.HasPrefix(address, "multicast") {
-			expectedReceived *= len(allRouterNames)
-		}
-		gomega.Expect(r.delivered).To(gomega.Equal(expectedReceived))
 	}
 
 }

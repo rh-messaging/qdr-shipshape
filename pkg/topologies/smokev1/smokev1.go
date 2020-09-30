@@ -87,6 +87,15 @@ func (s *SmokeRouterOnlyTopology) ValidateDeployment() error {
 			return err
 		}
 	}
+	// validate all services have been created
+	ctx := s.FrameworkSmoke.GetFirstContext()
+	for _, svcName := range s.AllRouterNames() {
+		ginkgo.By("Validating availability of service: " + svcName)
+		_, err := ctx.WaitForService(svcName, time.Minute, time.Second * 10)
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
