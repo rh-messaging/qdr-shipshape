@@ -11,6 +11,7 @@ import (
 	"github.com/rh-messaging/shipshape/pkg/apps/qdrouterd/qdrmanagement/entities"
 	"github.com/rh-messaging/shipshape/pkg/framework"
 	"github.com/rh-messaging/shipshape/pkg/framework/log"
+    "os"
 	"time"
 )
 
@@ -184,6 +185,9 @@ func (s *SmokeRouterOnlyTopology) initializeInteriors() {
 
 	// Initializing the interior routers
 	s.IcInteriorEast = s.defaultInteriorSpec()
+    if os.Getenv("IMAGE_QDROUTERD_INTEROP") != "" {
+        s.IcInteriorEast.DeploymentPlan.Image = os.Getenv("IMAGE_QDROUTERD_INTEROP")
+    }
 
 	// TODO Discuss about it.
 	//      If we change it to deploy using two distinct namespaces, we will need
@@ -216,6 +220,11 @@ func (s *SmokeRouterOnlyTopology) initializeEdges() {
 	ctx := s.FrameworkSmoke.GetFirstContext()
 	s.IcEdgeEast1 = s.defaultEdgeSpec(nameIcInteriorEast, ctx.Namespace)
 	s.IcEdgeEast2 = s.defaultEdgeSpec(nameIcInteriorEast, ctx.Namespace)
+    // If we set the image for Interop mode
+    if os.Getenv("IMAGE_QDROUTERD_INTEROP") != "" {
+        s.IcEdgeEast1.DeploymentPlan.Image = os.Getenv("IMAGE_QDROUTERD_INTEROP")
+        s.IcEdgeEast2.DeploymentPlan.Image = os.Getenv("IMAGE_QDROUTERD_INTEROP")
+    }
 	s.IcEdgeWest1 = s.defaultEdgeSpec(nameIcInteriorWest, ctx.Namespace)
 	s.IcEdgeWest2 = s.defaultEdgeSpec(nameIcInteriorWest, ctx.Namespace)
 }
