@@ -1,6 +1,7 @@
 package interioredge
 
 import (
+	"bytes"
 	"fmt"
 	. "github.com/onsi/ginkgo"
 	"github.com/onsi/gomega"
@@ -10,8 +11,13 @@ import (
 	"github.com/rh-messaging/shipshape/pkg/apps/qdrouterd/qdrmanagement/entities"
 	"github.com/rh-messaging/shipshape/pkg/framework"
 	"github.com/rh-messaging/shipshape/pkg/framework/log"
+	"io"
+	v1 "k8s.io/api/core/v1"
+	v12 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"os"
 	"strings"
 	"sync"
+	"time"
 )
 
 const (
@@ -40,6 +46,43 @@ func runSmokeTest(address string, msgCount int, msgSize int, allRouterNames []st
 	// Deploying all senders and receivers across all nodes
 	senders, receivers := DeployClients(allRouterNames, ctx, address, numClients, msgCount, msgSize, timeout)
 
+	// If the test times out, check the routers status
+	cc := make(chan struct{})
+	go func(closech <-chan struct{}) {
+		fmt.Printf("Waiting 10 minutes to gather results\n")
+		ta := time.After(time.Minute * 10)
+		select {
+		case <-ta:
+			fmt.Printf("==========\nResult gathering timed out, logging router links status\n==================\n")
+			for _, podRouter := range TopologySmoke.AllRouterNames() {
+
+				podList, err := ctx.Clients.KubeClient.CoreV1().Pods(ctx.Namespace).List(v12.ListOptions{
+					LabelSelector: fmt.Sprintf("interconnect_cr=%s", podRouter),
+				})
+
+				if err != nil {
+					panic(err)
+				}
+
+				for _, pod := range podList.Items {
+					commandToRun := fmt.Sprintf("qdstat -l")
+					fmt.Println("=============== Router Pod => ", pod.Name)
+
+					kb := framework.NewKubectlExecCommand(*ctx, pod.Name, time.Minute, strings.Split(commandToRun, " ")...)
+					out, err := kb.Exec()
+
+					if err != nil {
+						log.Logf("error: %v\n", err)
+					}
+					fmt.Println("--- stdout ---")
+					fmt.Println(out)
+				}
+			}
+		case <-cc:
+			fmt.Println("Closing routine for results gathering before timeout")
+		}
+	}(cc)
+
 	// If debug mode is enabled, snapshot router links
 	if IsDebugEnabled() {
 		debug.SnapshotRouters(allRouterNames, ctx, entities.Link{}, nil, &WG, &doneSnapshoting)
@@ -47,6 +90,7 @@ func runSmokeTest(address string, msgCount int, msgSize int, allRouterNames []st
 
 	// Collecting results
 	sndResults, rcvResults := CollectResults(senders, receivers)
+	close(cc)
 
 	// Trigger goroutines waiting on doneChannel
 	if IsDebugEnabled() {
@@ -90,7 +134,7 @@ func DeployClients(allRouterNames []string, ctx *framework.ContextData, address 
 	if strings.Contains(address, "anycast") {
 		senders = deploySenders(allRouterNames, ctx, address, numClients, msgCount, msgSize, timeout)
 		receivers = deployReceivers(allRouterNames, msgCount, address, len(allRouterNames), ctx, numClients, msgSize, timeout)
-	// when using multicast start receivers first (as the sender here uses presettled delivery)
+		// when using multicast start receivers first (as the sender here uses presettled delivery)
 	} else {
 		receivers = deployReceivers(allRouterNames, msgCount, address, len(allRouterNames), ctx, numClients, msgSize, timeout)
 		// wait till receiver is running (otherwise senders will send msgs before receivers can consume them)
@@ -167,6 +211,20 @@ func saveRouterLogs(routers []string, ctx *framework.ContextData, wg *sync.WaitG
 
 }
 
+func WriteToFile(filename string, data string) error {
+	file, err := os.Create(filename)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	_, err = io.WriteString(file, data)
+	if err != nil {
+		return err
+	}
+	return file.Sync()
+}
+
 // CollectResults generate results obtained from python's basic senders and receivers.
 func CollectResults(senders []*python.PythonClient, receivers []*python.PythonClient) ([]results, []results) {
 	sndResults := []results{}
@@ -178,11 +236,43 @@ func CollectResults(senders []*python.PythonClient, receivers []*python.PythonCl
 			log.Logf("Skipping sender results on multicast (validate just receivers)")
 			break
 		}
+
 		log.Logf("Waiting sender: %s", s.Name)
 		s.Wait()
 
 		log.Logf("Parsing sender results")
 		res := s.Result()
+
+		if s.Status() != amqp.Success {
+
+			// Tail last line to see if it contains the result
+			linesToTail := int64(20)
+			request := s.Context.Clients.KubeClient.CoreV1().Pods(s.Context.Namespace).GetLogs(s.Pod.Name, &v1.PodLogOptions{
+				TailLines: &linesToTail,
+			})
+			logs, err := request.Stream()
+
+			// Close when done reading
+			defer logs.Close()
+
+			// Reading logs into buf
+			buf := new(bytes.Buffer)
+			_, err = io.Copy(buf, logs)
+
+			if err != nil {
+				panic("error in copy information from podLogs to buf")
+			}
+
+			logMsg := buf.String()
+
+			fileName := fmt.Sprintf("LogLines-for-pod-%s", s.Name)
+			err = WriteToFile(fileName, logMsg)
+			if err != nil {
+				panic("Error while saving pod logs")
+			}
+			fmt.Printf(logMsg)
+		}
+
 		log.Logf("Sender %s - Status: %v - Results - Delivered: %d - Released: %d - Rejected: %d - Modified: %d - Accepted: %d",
 			s.Name, s.Status(), res.Delivered, res.Released, res.Rejected, res.Modified, res.Accepted)
 
@@ -197,6 +287,7 @@ func CollectResults(senders []*python.PythonClient, receivers []*python.PythonCl
 
 	By("Collecting receivers results")
 	for _, r := range receivers {
+
 		log.Logf("Waiting receiver: %s", r.Name)
 		r.Wait()
 
