@@ -26,6 +26,9 @@ func SavePodLogs(ctx *framework.ContextData, podName string, container string) {
 
 	// Iterate through lines\
 	logFile := fmt.Sprintf("/tmp/ns_%s_pod_%s.log", ctx.Namespace, podName)
+	if len(os.Getenv("LOGFOLDER")) > 0 {
+		logFile = fmt.Sprintf("%s/ns_%s_pod_%s.log", os.Getenv("LOGFOLDER"), ctx.Namespace, podName)
+	}
 	log.Logf("-- writing pod logs to: %s", logFile)
 	f, _ := os.Create(logFile)
 	defer f.Close()

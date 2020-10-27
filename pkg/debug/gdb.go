@@ -22,8 +22,10 @@ func BackTrace(ctx *framework.ContextData, podName string) {
 		log.Logf("-- unable to collect backtrace: %s", err)
 	}
 
-	// Iterate through lines\
 	logFile := fmt.Sprintf("/tmp/ns_%s_pod_%s.backtrace.log", ctx.Namespace, podName)
+	if len(os.Getenv("LOGFOLDER")) > 0 {
+		logFile = fmt.Sprintf("%s/ns_%s_pod_%s.backtrace.log", os.Getenv("LOGFOLDER"), ctx.Namespace, podName)
+	}
 	log.Logf("-- writing backtrace logs to: %s", logFile)
 	f, _ := os.Create(logFile)
 	defer f.Close()
@@ -43,6 +45,9 @@ func Pstack(ctx *framework.ContextData, podName string) {
 
 	// Iterate through lines\
 	logFile := fmt.Sprintf("/tmp/ns_%s_pod_%s.pstack.log", ctx.Namespace, podName)
+	if len(os.Getenv("LOGFOLDER")) > 0 {
+		logFile = fmt.Sprintf("%s/ns_%s_pod_%s.pstack.log", os.Getenv("LOGFOLDER"), ctx.Namespace, podName)
+	}
 	log.Logf("-- writing pstack logs to: %s", logFile)
 	f, _ := os.Create(logFile)
 	defer f.Close()
