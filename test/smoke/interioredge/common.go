@@ -100,7 +100,7 @@ func runSmokeTest(address string, msgCount int, msgSize int, allRouterNames []st
 	if IsDebugEnabled() {
 		debug.SnapshotRouters(allRouterNames, ctx, entities.Link{}, nil, &WG, &doneSnapshoting)
 
-		commandToRun := fmt.Sprintf("get pods -o wide")
+		commandToRun := fmt.Sprintf("-n %s get pods -o wide", ctx.Namespace)
 		fmt.Println("=============== Router Pods status ==>  ", commandToRun)
 
 		kb := framework.NewKubectlCommand(*ctx, strings.Split(commandToRun, " ")...)
