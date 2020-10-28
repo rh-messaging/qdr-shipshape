@@ -56,7 +56,7 @@ func runSmokeTest(address string, msgCount int, msgSize int, allRouterNames []st
 			fmt.Printf("==========\nResult gathering timed out, logging router links status\n==================\n")
 
 			commandToRun := fmt.Sprintf("get pods -o wide")
-			fmt.Println("=============== Router Pods status ")
+			fmt.Println("=============== Router Pods status ==>  ", commandToRun)
 
 			kb := framework.NewKubectlCommand(*ctx, strings.Split(commandToRun, " ")...)
 			out, err := kb.Exec()
