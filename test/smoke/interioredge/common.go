@@ -54,6 +54,19 @@ func runSmokeTest(address string, msgCount int, msgSize int, allRouterNames []st
 		select {
 		case <-ta:
 			fmt.Printf("==========\nResult gathering timed out, logging router links status\n==================\n")
+
+			commandToRun := fmt.Sprintf("get pods -o wide")
+			fmt.Println("=============== Router Pods status ")
+
+			kb := framework.NewKubectlCommand(*ctx, strings.Split(commandToRun, " ")...)
+			out, err := kb.Exec()
+
+			if err != nil {
+				log.Logf("error: %v\n", err)
+			}
+			fmt.Println("--- stdout ---")
+			fmt.Println(out)
+
 			for _, podRouter := range TopologySmoke.AllRouterNames() {
 
 				podList, err := ctx.Clients.KubeClient.CoreV1().Pods(ctx.Namespace).List(v12.ListOptions{
