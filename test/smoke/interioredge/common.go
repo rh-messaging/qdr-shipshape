@@ -147,6 +147,18 @@ func runSmokeTest(address string, msgCount int, msgSize int, allRouterNames []st
 		gomega.Expect(r.success).To(gomega.BeTrue())
 	}
 
+	// If debug mode is enabled, snapshot router links
+	commandToRun := fmt.Sprintf("-n %s get pods -o wide", ctx.Namespace)
+	fmt.Println("=============== Router Pods status - Initial status ==>  ", commandToRun)
+
+	kb := framework.NewKubectlCommand(*ctx, strings.Split(commandToRun, " ")...)
+	out, err := kb.Exec()
+
+	if err != nil {
+		log.Logf("error: %v\n", err)
+	}
+	fmt.Println("--- stdout ---")
+	fmt.Println(out)
 }
 
 // DeployClients deploys both senders and receivers across all routers and return the
