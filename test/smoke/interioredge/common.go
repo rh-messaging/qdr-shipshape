@@ -55,8 +55,8 @@ func runSmokeTest(address string, msgCount int, msgSize int, allRouterNames []st
 		case <-ta:
 			fmt.Printf("==========\nResult gathering timed out, logging router links status\n==================\n")
 
-			commandToRun := fmt.Sprintf("get pods -o wide")
-			fmt.Println("=============== Router Pods status ==>  ", commandToRun)
+			commandToRun := fmt.Sprintf("-n %s get pods -o wide", ctx.Namespace)
+			fmt.Println("=============== Router Pods status after timeout ==>  ", commandToRun)
 
 			kb := framework.NewKubectlCommand(*ctx, strings.Split(commandToRun, " ")...)
 			out, err := kb.Exec()
@@ -101,7 +101,7 @@ func runSmokeTest(address string, msgCount int, msgSize int, allRouterNames []st
 		debug.SnapshotRouters(allRouterNames, ctx, entities.Link{}, nil, &WG, &doneSnapshoting)
 
 		commandToRun := fmt.Sprintf("-n %s get pods -o wide", ctx.Namespace)
-		fmt.Println("=============== Router Pods status ==>  ", commandToRun)
+		fmt.Println("=============== Router Pods status - Initial status ==>  ", commandToRun)
 
 		kb := framework.NewKubectlCommand(*ctx, strings.Split(commandToRun, " ")...)
 		out, err := kb.Exec()
