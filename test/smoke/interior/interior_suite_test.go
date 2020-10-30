@@ -11,7 +11,7 @@ func TestMain(m *testing.M) {
 	testcommon.Initialize(m)
 }
 
-func TestInterioredge(t *testing.T) {
+func TestInterior(t *testing.T) {
 	if os.Getenv("IMAGE_QDROUTERD_INTEROP") != "" {
 		log.Logf("Interoperability mode is enabled")
 	}
