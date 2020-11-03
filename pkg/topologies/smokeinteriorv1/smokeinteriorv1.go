@@ -109,7 +109,7 @@ func (s *SmokeInteriorRouterOnlyTopology) validateNetwork(interiorName string) e
 		// Expect that the 4 interior routers are showing up
 		nodes, err := qdrmanagement.QdmanageQueryWithRetries(*ctx, pod.Name, entities.Node{}, 10,
 			60, nil, func(es []entities.Entity, err error) bool {
-				return err != nil || len(es) == 4
+				return len(es) == 4
 			})
 		if err != nil {
 			return err
