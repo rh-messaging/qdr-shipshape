@@ -15,7 +15,7 @@ import (
 type PythonClientCmd string
 
 const (
-	PythonClientImage string          = "docker.io/qdrshipshape/clients-python:latest"
+	PythonClientImage string          = "quay.io/qdrshipshape/clients-python:latest"
 	BasicSender       PythonClientCmd = "basic_sender.py"
 	BasicReceiver     PythonClientCmd = "basic_receiver.py"
 )

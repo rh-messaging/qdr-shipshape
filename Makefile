@@ -1,3 +1,6 @@
+REG=quay.io
+ORG=qdrshipshape
+
 .PHONY: all
 all: build
 
@@ -26,9 +29,8 @@ images: build clients-python
 
 .PHONY: clients-python
 clients-python:
-	docker build -t qdrshipshape/clients-python clients/python/
-	docker tag qdrshipshape/clients-python docker.io/qdrshipshape/clients-python
-	docker push docker.io/qdrshipshape/clients-python
+	docker build -t $(REG)/$(ORG)/clients-python clients/python/
+	docker push $(REG)/$(ORG)/clients-python
 
 .PHONY: travis-tests
 travis-tests:
