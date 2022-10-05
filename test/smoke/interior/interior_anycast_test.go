@@ -24,7 +24,7 @@ var _ = Describe("Exchange AnyCast messages across all nodes", func() {
 		testSufix = " - Using Interoperability mode"
 	}
 
-	FIt(fmt.Sprintf("exchanges %d small messages with 1kb using senders and receivers across all router nodes%s", totalSmall, testSufix), func() {
+	It(fmt.Sprintf("exchanges %d small messages with 1kb using senders and receivers across all router nodes%s", totalSmall, testSufix), func() {
 		runSmokeTest("anycast/smoke/interior", totalSmall, 1024, allRouterNames)
 	})
 
