@@ -30,7 +30,6 @@ func DeployPythonClientByYaml(namespace, clientName, pythonImg, command, url str
 	if err != nil {
 		os.Exit(1)
 	}
-	fmt.Printf("YAML file created as %s\n", YAMLfileName)
 
 	yamlTemplate, err := template.New("pythonClientYamlTemplate").Parse(`
 apiVersion: v1

@@ -15,10 +15,9 @@ import (
 type PythonClientCmd string
 
 const (
-	PythonClientImage string = "quay.io/rgranzot/client-pythonato:2.0"
-	//PythonClientImage string          = "quay.io/qdrshipshape/clients-python:latest"
-	BasicSender   PythonClientCmd = "basic_sender.py"
-	BasicReceiver PythonClientCmd = "basic_receiver.py"
+	PythonClientImage string          = "quay.io/qdrshipshape/clients-python:latest"
+	BasicSender       PythonClientCmd = "basic_sender.py"
+	BasicReceiver     PythonClientCmd = "basic_receiver.py"
 )
 
 type PythonClient struct {
