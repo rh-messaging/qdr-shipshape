@@ -57,6 +57,11 @@ spec:
      value: {{ .Url }}
    - name: MSG_COUNT
      value: "{{ .MsgCount }}"
+   securityContext:
+     allowPrivilegeEscalation: false
+     runAsNonRoot: true
+     seccompProfile:
+       type: "RuntimeDefault"
  restartPolicy: Never`)
 	if err != nil {
 		panic(err)
