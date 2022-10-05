@@ -25,8 +25,7 @@ func DeployPythonClientByYaml(namespace, clientName, pythonImg, command, url str
 		MsgCount      int
 	}
 
-	YAMLfileName := fmt.Sprintf("/tmp/%s.yaml", clientName)
-	YAMLFile, err := os.Create(YAMLfileName)
+	YAMLFile, err := os.CreateTemp(os.TempDir(), fmt.Sprintf("%s-*.yaml", clientName))
 	if err != nil {
 		os.Exit(1)
 	}
@@ -87,6 +86,7 @@ spec:
 		panic(err)
 	}
 
+	YAMLfileName := YAMLFile.Name()
 	cmdToExec := exec.Command("kubectl", "apply", "-f", YAMLfileName, "-n", namespace)
 	var cmdOut bytes.Buffer
 	var cmdError bytes.Buffer
