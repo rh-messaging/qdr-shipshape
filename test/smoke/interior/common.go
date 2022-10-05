@@ -90,7 +90,7 @@ func DeployClients(allRouterNames []string, ctx *framework.ContextData, address 
 	if strings.Contains(address, "anycast") {
 		senders = deploySenders(allRouterNames, ctx, address, numClients, msgCount, msgSize, timeout)
 		receivers = deployReceivers(allRouterNames, msgCount, address, len(allRouterNames), ctx, numClients, msgSize, timeout)
-	// when using multicast start receivers first (as the sender here uses presettled delivery)
+		// when using multicast start receivers first (as the sender here uses presettled delivery)
 	} else {
 		receivers = deployReceivers(allRouterNames, msgCount, address, len(allRouterNames), ctx, numClients, msgSize, timeout)
 		// wait till receiver is running (otherwise senders will send msgs before receivers can consume them)
@@ -105,7 +105,7 @@ func DeployClients(allRouterNames []string, ctx *framework.ContextData, address 
 func deployReceivers(allRouterNames []string, msgCount int, address string, numSenders int, ctx *framework.ContextData, numClients int, msgSize int, timeout int) []*python.PythonClient {
 	// Deploying all receivers across all nodes
 	By("Deploying receivers across all router nodes")
-	receivers := []*python.PythonClient{}
+	var receivers []*python.PythonClient
 	for _, routerName := range allRouterNames {
 		rcvName := fmt.Sprintf("receiver-pythonbasic-%s", routerName)
 		rcvMsgCount := msgCount
@@ -120,7 +120,7 @@ func deployReceivers(allRouterNames []string, msgCount int, address string, numS
 func deploySenders(allRouterNames []string, ctx *framework.ContextData, address string, numClients int, msgCount int, msgSize int, timeout int) []*python.PythonClient {
 	// Deploying all senders across all nodes
 	By("Deploying senders across all router nodes")
-	senders := []*python.PythonClient{}
+	var senders []*python.PythonClient
 	for _, routerName := range allRouterNames {
 		sndName := fmt.Sprintf("sender-pythonbasic-%s", routerName)
 		senders = append(senders, python.DeployPythonClient(ctx, routerName, sndName, address, IsDebugEnabled(), python.BasicSender, numClients, msgCount, msgSize, timeout)...)
@@ -169,8 +169,8 @@ func saveRouterLogs(routers []string, ctx *framework.ContextData, wg *sync.WaitG
 
 // CollectResults generate results obtained from python's basic senders and receivers.
 func CollectResults(senders []*python.PythonClient, receivers []*python.PythonClient) ([]results, []results) {
-	sndResults := []results{}
-	rcvResults := []results{}
+	var sndResults []results
+	var rcvResults []results
 
 	By("Collecting senders results")
 	for _, s := range senders {

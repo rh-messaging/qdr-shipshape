@@ -12,11 +12,11 @@ import (
 var (
 	TopologySmoke *smokeinteriorv1.SmokeInteriorRouterOnlyTopology
 	//ConfigMap     *v1.ConfigMap
-	Config        *testcommon.Config
+	Config *testcommon.Config
 )
 
 const (
-	ConfigMapName      = "messaging-files"
+	ConfigMapName = "messaging-files"
 )
 
 // Creates a unique namespace prefixed as "e2e-tests-smoke"
@@ -26,7 +26,7 @@ var _ = ginkgo.BeforeEach(func() {
 
 	// Initializes using only Qdr Operator
 	qdrOperator := operators.SupportedOperators[operators.OperatorTypeQdr]
-	qdrOperator.WithImage(Config.GetEnvProperty(testcommon.PropertyImageQDrOperator,"quay.io/interconnectedcloud/qdr-operator:latest"))
+	qdrOperator.WithImage(Config.GetEnvProperty(testcommon.PropertyImageQDrOperator, "quay.io/interconnectedcloud/qdr-operator:latest"))
 	builder := framework.
 		NewFrameworkBuilder("smoke").
 		WithBuilders(qdrOperator)
