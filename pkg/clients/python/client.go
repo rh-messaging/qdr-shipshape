@@ -41,7 +41,7 @@ func (p *PythonClient) Result() amqp.ResultData {
 	// Tail last line to see if it contains the result
 	linesToTail := int64(1)
 	request := p.Context.Clients.KubeClient.CoreV1().Pods(p.Context.Namespace).GetLogs(p.Pod.Name, &v1.PodLogOptions{
-		TailLines:    &linesToTail,
+		TailLines: &linesToTail,
 	})
 	logs, err := request.Stream()
 	gomega.Expect(err).To(gomega.BeNil())
