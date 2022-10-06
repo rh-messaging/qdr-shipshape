@@ -6,6 +6,7 @@ import (
 	"github.com/rh-messaging/qdr-shipshape/pkg/spec/interconnect"
 	"github.com/rh-messaging/shipshape/pkg/framework"
 	"github.com/rh-messaging/shipshape/pkg/framework/log"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"strconv"
@@ -25,7 +26,7 @@ func DeployPythonClientByYaml(namespace, clientName, pythonImg, command, url str
 		MsgCount      int
 	}
 
-	YAMLFile, err := os.CreateTemp(os.TempDir(), fmt.Sprintf("%s-*.yaml", clientName))
+	YAMLFile, err := ioutil.TempFile(os.TempDir(), fmt.Sprintf("%s-*.yaml", clientName))
 	if err != nil {
 		os.Exit(1)
 	}
