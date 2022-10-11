@@ -61,6 +61,7 @@ spec:
      runAsNonRoot: true
      seccompProfile:
        type: "RuntimeDefault"
+     runAsUser: 1234 
  restartPolicy: Never`)
 	if err != nil {
 		panic(err)
